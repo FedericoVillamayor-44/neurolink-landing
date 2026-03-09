@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neurolink BA — Automatización para PyMEs argentinas</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:   #071520;
+    --navy2:  #0a1f2e;
+    --card:   #0d2233;
+    --border: #1a3a50;
+    --cyan:   #4de8e8;
+    --white:  #e8f4f8;
+    --gray:   #4a7a8a;
+    --gray2:  #7aaabb;
+    --pink:   #ff4de8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--navy);color:var(--white);font-family:'Syne',sans-serif;overflow-x:hidden;}
+
+  body::after{
+    content:'';position:fixed;inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+    pointer-events:none;z-index:0;opacity:0.5;
+  }
+
+  /* NAV */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    padding:20px 52px;
+    display:flex;align-items:center;justify-content:space-between;
+    transition:all 0.4s;
+  }
+  nav.scrolled{
+    background:rgba(7,21,32,0.96);
+    border-bottom:1px solid var(--border);
+    backdrop-filter:blur(20px);
+  }
+  .logo-text{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:22px;letter-spacing:3px;color:var(--white);
+    display:flex;align-items:center;gap:10px;
+  }
+  .logo-text span{color:var(--cyan);}
+  .logo-node{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--cyan);box-shadow:0 0 8px var(--cyan);
+    animation:pulse 2s infinite;flex-shrink:0;
+  }
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.3;transform:scale(0.8);}}
+
+  .nav-links{display:flex;align-items:center;gap:32px;}
+  .nav-links a{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:2px;
+    color:var(--gray2);text-decoration:none;
+    text-transform:uppercase;transition:color 0.2s;
+  }
+  .nav-links a:hover{color:var(--cyan);}
+  .nav-btn{
+    background:var(--cyan)!important;color:var(--navy)!important;
+    padding:9px 22px;font-weight:700!important;border-radius:2px;
+  }
+  .nav-btn:hover{opacity:0.85;}
+
+  /* HERO */
+  #hero{
+    min-height:100vh;display:flex;align-items:center;
+    padding:130px 52px 100px;position:relative;overflow:hidden;
+  }
+  .hero-grid{
+    position:absolute;inset:0;
+    background-image:
+      linear-gradient(var(--border) 1px,transparent 1px),
+      linear-gradient(90deg,var(--border) 1px,transparent 1px);
+    background-size:56px 56px;opacity:0.18;
+    mask-image:radial-gradient(ellipse 80% 80% at 55% 45%,black 20%,transparent 100%);
+  }
+  .hero-glow{
+    position:absolute;top:-200px;right:5%;
+    width:700px;height:700px;
+    background:radial-gradient(ellipse,#4de8e810 0%,transparent 65%);
+    pointer-events:none;
+  }
+  .net-bg{
+    position:absolute;right:-20px;top:50%;transform:translateY(-50%);
+    width:480px;height:480px;opacity:0.07;pointer-events:none;
+  }
+
+  .hero-inner{
+    max-width:1140px;margin:0 auto;width:100%;
+    position:relative;z-index:1;
+    display:grid;grid-template-columns:1.15fr 0.85fr;
+    gap:80px;align-items:center;
+  }
+  .hero-tag{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:3px;color:var(--cyan);
+    border:1px solid var(--cyan);padding:5px 14px;border-radius:2px;
+    margin-bottom:28px;
+    opacity:0;animation:fadeUp 0.6s 0.1s forwards;
+  }
+  .tag-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:pulse 2s infinite;}
+
+  h1{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(52px,6.2vw,84px);
+    line-height:0.93;letter-spacing:1px;
+    margin-bottom:24px;
+    opacity:0;animation:fadeUp 0.6s 0.2s forwards;
+  }
+  h1 .c{color:var(--cyan);}
+  h1 .d{color:var(--gray2);}
+
+  .hero-sub{
+    font-size:17px;color:var(--gray2);
+    line-height:1.75;font-weight:300;margin-bottom:44px;
+    opacity:0;animation:fadeUp 0.6s 0.3s forwards;
+  }
+  .hero-sub strong{color:var(--white);font-weight:500;}
+
+  .btn-primary{
+    display:inline-flex;align-items:center;gap:10px;
+    background:var(--cyan);color:var(--navy);
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:2px;text-transform:uppercase;
+    padding:16px 32px;border-radius:2px;font-weight:700;
+    border:none;cursor:pointer;transition:all 0.25s;
+    opacity:0;animation:fadeUp 0.6s 0.4s forwards;
+  }
+  .btn-primary:hover{background:#6ef0f0;transform:translateY(-2px);box-shadow:0 10px 40px #4de8e830;}
+  .hero-micro{
+    margin-top:14px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:1px;color:var(--gray);
+    opacity:0;animation:fadeUp 0.6s 0.5s forwards;
+  }
+
+  .hero-right{opacity:0;animation:fadeUp 0.7s 0.4s forwards;}
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .stat{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:4px;padding:26px 20px;transition:all 0.3s;position:relative;overflow:hidden;
+  }
+  .stat::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:var(--cyan);transform:scaleX(0);transition:transform 0.3s;
+  }
+  .stat:hover{border-color:var(--cyan);transform:translateY(-3px);}
+  .stat:hover::before{transform:scaleX(1);}
+  .stat-n{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--cyan);line-height:1;margin-bottom:6px;}
+  .stat-l{font-size:12px;color:var(--gray2);line-height:1.4;}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}
+
+  /* SECTIONS */
+  section{padding:96px 52px;}
+  .container{max-width:1140px;margin:0 auto;}
+  .sec-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:4px;
+    color:var(--cyan);text-transform:uppercase;
+    margin-bottom:14px;display:flex;align-items:center;gap:14px;
+  }
+  .sec-label::after{content:'';flex:1;max-width:50px;height:1px;background:var(--cyan);opacity:0.5;}
+  h2{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(36px,4vw,54px);
+    line-height:0.95;letter-spacing:1px;margin-bottom:14px;
+  }
+  .sec-sub{font-size:16px;color:var(--gray2);font-weight:300;max-width:520px;line-height:1.75;margin-bottom:52px;}
+
+  /* PROBLEMA */
+  #problema{background:var(--navy2);}
+  .prob-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .prob-card{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:4px;padding:32px 26px;transition:all 0.3s;
+  }
+  .prob-card:hover{border-color:#4de8e840;transform:translateY(-4px);}
+  .prob-ico{font-size:26px;margin-bottom:16px;}
+  .prob-t{font-size:15px;font-weight:600;color:var(--white);margin-bottom:10px;}
+  .prob-d{font-size:13px;color:var(--gray2);line-height:1.65;}
+  .prob-cost{
+    margin-top:16px;font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:1px;color:var(--cyan);opacity:0.7;
+  }
+
+  /* AVATARES */
+  #avatares{background:var(--navy);}
+  .av-intro{
+    font-size:16px;color:var(--gray2);font-weight:300;
+    max-width:560px;line-height:1.75;margin-bottom:52px;
+  }
+  .av-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;}
+  .av-card{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:4px;padding:32px 28px;
+    transition:all 0.3s;position:relative;overflow:hidden;
+    display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start;
+  }
+  .av-card:hover{border-color:var(--cyan);transform:translateY(-3px);}
+  .av-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:var(--cyan);transform:scaleX(0);transition:transform 0.3s;
+  }
+  .av-card:hover::before{transform:scaleX(1);}
+  .av-emoji{font-size:52px;line-height:1;}
+  .av-plan{
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;letter-spacing:2px;
+    color:var(--cyan);text-transform:uppercase;margin-bottom:10px;
+  }
+  .av-name{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:22px;letter-spacing:1px;color:var(--white);
+    margin-bottom:4px;
+  }
+  .av-desc{font-size:13px;color:var(--gray2);margin-bottom:16px;font-style:italic;}
+  .av-needs{list-style:none;}
+  .av-needs li{
+    font-size:12px;color:var(--gray2);
+    padding:3px 0;display:flex;align-items:center;gap:8px;
+  }
+  .av-needs li::before{content:'→';color:var(--cyan);font-size:10px;}
+  .av-badge{
+    align-self:start;
+    background:var(--cyan-dim,#4de8e815);
+    border:1px solid var(--cyan);
+    border-radius:2px;padding:6px 12px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;letter-spacing:2px;
+    color:var(--cyan);text-transform:uppercase;white-space:nowrap;
+  }
+
+  /* PLANES */
+  #planes{background:var(--navy2);}
+  .planes-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:860px;}
+  .plan-card{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:6px;padding:40px 36px;
+    transition:all 0.3s;position:relative;overflow:hidden;
+  }
+  .plan-card.featured{border-color:var(--cyan);}
+  .plan-card.featured::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  }
+  .plan-badge-top{
+    position:absolute;top:20px;right:20px;
+    background:var(--cyan);color:var(--navy);
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;letter-spacing:2px;font-weight:700;
+    padding:4px 10px;border-radius:2px;text-transform:uppercase;
+  }
+  .plan-tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:3px;
+    color:var(--gray2);text-transform:uppercase;margin-bottom:12px;
+  }
+  .plan-name{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:36px;letter-spacing:2px;
+    color:var(--cyan);margin-bottom:8px;
+  }
+  .plan-desc{font-size:14px;color:var(--gray2);line-height:1.65;margin-bottom:24px;}
+  .plan-for{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:1px;
+    color:var(--gray);margin-bottom:8px;text-transform:uppercase;
+  }
+  .plan-avatars{
+    display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;
+  }
+  .plan-avatar{
+    background:var(--navy2);border:1px solid var(--border);
+    border-radius:2px;padding:4px 10px;
+    font-size:11px;color:var(--gray2);
+  }
+  .plan-list{list-style:none;margin-bottom:32px;}
+  .plan-list li{
+    font-size:13px;color:var(--gray2);
+    padding:6px 0;display:flex;align-items:flex-start;gap:10px;
+    border-bottom:1px solid var(--border);
+  }
+  .plan-list li:last-child{border:none;}
+  .plan-list li::before{content:'✓';color:var(--cyan);font-weight:700;flex-shrink:0;margin-top:1px;}
+  .btn-plan{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--cyan);color:var(--navy);
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:2px;text-transform:uppercase;
+    padding:14px;border-radius:2px;font-weight:700;
+    border:none;cursor:pointer;transition:all 0.2s;
+  }
+  .btn-plan:hover{background:#6ef0f0;}
+  .btn-plan-outline{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+    background:transparent;color:var(--cyan);
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:2px;text-transform:uppercase;
+    padding:14px;border-radius:2px;font-weight:700;
+    border:1px solid var(--cyan);cursor:pointer;transition:all 0.2s;
+  }
+  .btn-plan-outline:hover{background:var(--cyan);color:var(--navy);}
+
+  /* PROCESO */
+  #proceso{background:var(--navy);}
+  .pasos{display:flex;flex-direction:column;max-width:680px;position:relative;}
+  .pasos::before{
+    content:'';position:absolute;left:26px;top:0;bottom:0;
+    width:1px;background:var(--border);
+  }
+  .paso{
+    display:flex;gap:28px;align-items:flex-start;
+    padding:28px 0;border-bottom:1px solid var(--border);
+  }
+  .paso:last-child{border:none;}
+  .paso-n{
+    width:54px;height:54px;border-radius:50%;
+    background:var(--card);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Bebas Neue',sans-serif;font-size:22px;
+    color:var(--cyan);flex-shrink:0;z-index:1;transition:all 0.3s;
+  }
+  .paso:hover .paso-n{background:var(--cyan);color:var(--navy);border-color:var(--cyan);}
+  .paso-c{padding-top:8px;}
+  .paso-t{font-size:16px;font-weight:600;color:var(--white);margin-bottom:8px;}
+  .paso-d{font-size:13px;color:var(--gray2);line-height:1.65;}
+  .paso-time{
+    margin-top:8px;font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:1px;color:var(--gray);
+  }
+
+  /* CTA */
+  #cta{background:var(--navy2);text-align:center;}
+  .cta-box{
+    max-width:660px;margin:0 auto;
+    background:var(--card);border:1px solid var(--border);
+    border-radius:6px;padding:64px 48px;
+    position:relative;overflow:hidden;
+  }
+  .cta-box::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  }
+  .cta-glow{
+    position:absolute;top:-80px;left:50%;transform:translateX(-50%);
+    width:400px;height:300px;
+    background:radial-gradient(ellipse,#4de8e80a 0%,transparent 70%);pointer-events:none;
+  }
+  .cta-box h2{margin-bottom:16px;}
+  .cta-box p{font-size:16px;color:var(--gray2);font-weight:300;line-height:1.75;margin-bottom:40px;}
+  .cta-box p strong{color:var(--white);font-weight:500;}
+  .cta-feats{display:flex;justify-content:center;gap:24px;margin-top:24px;flex-wrap:wrap;}
+  .cta-feat{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--gray2);}
+  .cta-feat::before{content:'✓';color:var(--cyan);font-weight:700;}
+
+  /* FOOTER */
+  footer{
+    background:var(--navy);border-top:1px solid var(--border);
+    padding:28px 52px;
+    display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:16px;
+  }
+  footer p{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gray);}
+  .footer-social{display:flex;align-items:center;gap:20px;}
+  .footer-social a{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:2px;
+    color:var(--gray2);text-decoration:none;
+    transition:color 0.2s;
+  }
+  .footer-social a:hover{color:var(--cyan);}
+
+  /* MODAL */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;
+    background:rgba(4,13,22,0.93);
+    backdrop-filter:blur(12px);
+    z-index:999;align-items:center;justify-content:center;
+  }
+  .modal-overlay.active{display:flex;}
+  .modal{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:6px;padding:48px;
+    max-width:500px;width:92%;position:relative;
+    animation:fadeUp 0.3s forwards;
+  }
+  .modal::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  }
+  .modal-x{
+    position:absolute;top:16px;right:20px;
+    background:none;border:none;color:var(--gray);
+    font-size:22px;cursor:pointer;transition:color 0.2s;
+  }
+  .modal-x:hover{color:var(--white);}
+  .modal h3{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;margin-bottom:8px;}
+  .modal-sub{font-size:13px;color:var(--gray2);line-height:1.6;margin-bottom:28px;}
+  .fg{margin-bottom:14px;}
+  .fg label{
+    display:block;font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:2px;
+    color:var(--gray);margin-bottom:6px;text-transform:uppercase;
+  }
+  .fg input,.fg select{
+    width:100%;background:var(--navy2);
+    border:1px solid var(--border);border-radius:2px;
+    padding:12px 14px;color:var(--white);
+    font-family:'Syne',sans-serif;font-size:14px;
+    outline:none;transition:border-color 0.2s;
+  }
+  .fg input:focus,.fg select:focus{border-color:var(--cyan);}
+  .fg select option{background:var(--navy2);}
+  .btn-sub{
+    width:100%;margin-top:6px;
+    background:var(--cyan);color:var(--navy);
+    border:none;border-radius:2px;padding:14px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:2px;font-weight:700;text-transform:uppercase;
+    cursor:pointer;transition:all 0.2s;
+  }
+  .btn-sub:hover{background:#6ef0f0;}
+  .modal-ok{text-align:center;padding:20px 0;}
+  .modal-ok .ck{font-size:52px;margin-bottom:16px;}
+  .modal-ok h3{margin-bottom:12px;}
+  .modal-ok p{font-size:13px;color:var(--gray2);line-height:1.65;}
+
+  /* WPP FLOAT */
+  .wpp-float{
+    position:fixed;bottom:28px;right:28px;z-index:200;
+    width:56px;height:56px;border-radius:50%;
+    background:#25d366;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 20px rgba(37,211,102,0.4);
+    transition:transform 0.2s;cursor:pointer;
+    text-decoration:none;
+  }
+  .wpp-float:hover{transform:scale(1.1);}
+
+  /* REVEAL */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity 0.65s,transform 0.65s;}
+  .reveal.visible{opacity:1;transform:none;}
+
+  @media(max-width:920px){
+    nav{padding:16px 24px;}
+    .nav-links{display:none;}
+    section{padding:72px 24px;}
+    #hero{padding:110px 24px 72px;}
+    .hero-inner{grid-template-columns:1fr;gap:48px;}
+    .hero-right{order:-1;}
+    .stats-grid{grid-template-columns:1fr 1fr;}
+    .prob-grid{grid-template-columns:1fr;}
+    .av-grid{grid-template-columns:1fr;}
+    .av-card{grid-template-columns:1fr;gap:16px;}
+    .planes-grid{grid-template-columns:1fr;}
+    .cta-box{padding:40px 24px;}
+    footer{flex-direction:column;text-align:center;}
+    .net-bg{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="logo-text"><span class="logo-node"></span>NEURO<span>LINK</span> BA</div>
+  <div class="nav-links">
+    <a href="#problema">El problema</a>
+    <a href="#avatares">¿Sos vos?</a>
+    <a href="#planes">Planes</a>
+    <a href="#proceso">Proceso</a>
+    <a href="#" class="nav-btn" onclick="openModal();return false;">Llamada gratuita</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <svg class="net-bg" viewBox="0 0 400 400">
+    <circle cx="80" cy="80" r="8" fill="#4de8e8"/>
+    <circle cx="280" cy="60" r="6" fill="#4de8e8"/>
+    <circle cx="320" cy="200" r="10" fill="#4de8e8"/>
+    <circle cx="160" cy="280" r="7" fill="#4de8e8"/>
+    <circle cx="60" cy="320" r="5" fill="#4de8e8"/>
+    <circle cx="340" cy="340" r="8" fill="#4de8e8"/>
+    <circle cx="200" cy="160" r="12" fill="none" stroke="#4de8e8" stroke-width="2"/>
+    <line x1="80" y1="80" x2="200" y2="160" stroke="#4de8e8" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <line x1="280" y1="60" x2="200" y2="160" stroke="#4de8e8" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <line x1="320" y1="200" x2="200" y2="160" stroke="#4de8e8" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <line x1="160" y1="280" x2="200" y2="160" stroke="#4de8e8" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <line x1="200" y1="160" x2="340" y2="340" stroke="#4de8e8" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <line x1="60" y1="320" x2="160" y2="280" stroke="#4de8e8" stroke-width="1.5" stroke-dasharray="6 4"/>
+  </svg>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-tag"><span class="tag-dot"></span>Automatización para PyMEs · Buenos Aires</div>
+      <h1>CUANDO LOS<br>SISTEMAS SE <span class="c">ORDENAN</span><br><span class="d">TU TIEMPO VUELVE</span><br><span class="d">A SER TUYO</span></h1>
+      <p class="hero-sub">
+        Automatizamos la atención al cliente, los pedidos y los procesos repetitivos de tu empresa con inteligencia artificial.<br><br>
+        <strong>El activo más importante es el tiempo.</strong> Nosotros te lo devolvemos.
+      </p>
+      <button class="btn-primary" onclick="openModal()">
+        Agendá tu llamada gratuita
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <p class="hero-micro">Sin compromiso &nbsp;·&nbsp; 30 minutos &nbsp;·&nbsp; 100% gratuita</p>
+    </div>
+    <div class="hero-right">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-n">8hs</div><div class="stat-l">ahorradas por semana en promedio</div></div>
+        <div class="stat"><div class="stat-n">&lt;2'</div><div class="stat-l">respuesta automática a leads</div></div>
+        <div class="stat"><div class="stat-n">100%</div><div class="stat-l">consultas respondidas, incluso de madrugada</div></div>
+        <div class="stat"><div class="stat-n">10d</div><div class="stat-l">implementación desde el primer llamado</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMA -->
+<section id="problema">
+  <div class="container reveal">
+    <div class="sec-label">El problema</div>
+    <h2>EL PROBLEMA NO ES <span style="color:var(--cyan)">EL TRABAJO</span></h2>
+    <p class="sec-sub">Es que el trabajo que más tiempo te consume es el que menos valor te genera.</p>
+    <div class="prob-grid">
+      <div class="prob-card">
+        <div class="prob-ico">💬</div>
+        <div class="prob-t">Leads que se enfrían solos</div>
+        <div class="prob-d">Un cliente escribe a las 11pm preguntando el precio. Si no respondés en menos de 5 minutos, el 80% ya buscó otra opción.</div>
+        <div class="prob-cost">→ 3 a 5 ventas perdidas por semana</div>
+      </div>
+      <div class="prob-card">
+        <div class="prob-ico">🔁</div>
+        <div class="prob-t">Tareas que no terminan</div>
+        <div class="prob-d">Copiar pedidos, responder las mismas preguntas, reenviar presupuestos. Pequeñas, pero suman horas enteras de tu día.</div>
+        <div class="prob-cost">→ 8 horas semanales perdidas en promedio</div>
+      </div>
+      <div class="prob-card">
+        <div class="prob-ico">🧠</div>
+        <div class="prob-t">Carga mental constante</div>
+        <div class="prob-d">Tu cabeza está siempre en la operación. No podés crecer porque estás ocupado apagando incendios todos los días.</div>
+        <div class="prob-cost">→ Sin sistema, no hay escala posible</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AVATARES -->
+<section id="avatares">
+  <div class="container reveal">
+    <div class="sec-label">¿Te reconocés?</div>
+    <h2>CON QUIÉN <span style="color:var(--cyan)">TRABAJAMOS</span></h2>
+    <p class="av-intro">Cada negocio tiene su propio ritmo y sus propios cuellos de botella. Identificamos cuatro perfiles con los que más trabajamos — a ver si te sentís identificado.</p>
+    <div class="av-grid">
+      <div class="av-card">
+        <div>
+          <div class="av-plan">Neurolink Plus</div>
+          <div class="av-name">🐝 Abeja Nativa</div>
+          <div class="av-desc">Negocio chico o PyME con alta operación diaria</div>
+          <ul class="av-needs">
+            <li>Ahorrar tiempo operativo</li>
+            <li>Reducir tareas repetitivas</li>
+            <li>Ordenar la atención al cliente</li>
+          </ul>
+        </div>
+        <span class="av-badge">Plus</span>
+      </div>
+      <div class="av-card">
+        <div>
+          <div class="av-plan">Neurolink Premium</div>
+          <div class="av-name">🦊 Zorro Colorado</div>
+          <div class="av-desc">Emprendedor astuto con alta carga mental</div>
+          <ul class="av-needs">
+            <li>Delegar procesos mentalmente</li>
+            <li>Ordenar la operación completa</li>
+            <li>Escalar sin quemarse</li>
+          </ul>
+        </div>
+        <span class="av-badge">Premium</span>
+      </div>
+      <div class="av-card">
+        <div>
+          <div class="av-plan">Neurolink Premium</div>
+          <div class="av-name">🦅 Cóndor Andino</div>
+          <div class="av-desc">Perfil analítico con visión macro y dificultad para decidir</div>
+          <ul class="av-needs">
+            <li>Reducir la parálisis por análisis</li>
+            <li>Bajar las ideas a tierra</li>
+            <li>Tomar decisiones con información clara</li>
+          </ul>
+        </div>
+        <span class="av-badge">Premium</span>
+      </div>
+      <div class="av-card">
+        <div>
+          <div class="av-plan">Neurolink Premium</div>
+          <div class="av-name">🐦 Hornero</div>
+          <div class="av-desc">Creativo constante que necesita estructura para sostener su trabajo</div>
+          <ul class="av-needs">
+            <li>Ordenar su forma de trabajar</li>
+            <li>Crear procesos repetibles</li>
+            <li>No depender de la motivación</li>
+          </ul>
+        </div>
+        <span class="av-badge">Premium</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLANES -->
+<section id="planes">
+  <div class="container reveal">
+    <div class="sec-label">Los planes</div>
+    <h2>DOS CAMINOS, <span style="color:var(--cyan)">UN DESTINO</span></h2>
+    <p class="sec-sub">En la llamada gratuita definimos juntos cuál es el que mejor se adapta a tu situación.</p>
+    <div class="planes-grid">
+      <div class="plan-card">
+        <div class="plan-tag">Para empezar</div>
+        <div class="plan-name">NEUROLINK PLUS</div>
+        <div class="plan-desc">Alivia la operación diaria. Ideal para negocios que necesitan ganar tiempo y ordenar la atención al cliente.</div>
+        <div class="plan-for">Ideal para</div>
+        <div class="plan-avatars">
+          <span class="plan-avatar">🐝 Abeja Nativa</span>
+        </div>
+        <ul class="plan-list">
+          <li>Bot de WhatsApp con IA para atención 24/7</li>
+          <li>Automatización de tareas operativas repetitivas</li>
+          <li>Registro automático de consultas y pedidos</li>
+          <li>Notificaciones en tiempo real al equipo</li>
+          <li>Documentación y capacitación incluida</li>
+          <li>Soporte post-implementación 2 semanas</li>
+        </ul>
+        <button class="btn-plan-outline" onclick="openModal()">Quiero saber más →</button>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-badge-top">MÁS ELEGIDO</div>
+        <div class="plan-tag">Para escalar</div>
+        <div class="plan-name">NEUROLINK PREMIUM</div>
+        <div class="plan-desc">Ordena procesos y delega mentalmente. Para emprendedores que quieren un sistema que funcione sin que estén presentes.</div>
+        <div class="plan-for">Ideal para</div>
+        <div class="plan-avatars">
+          <span class="plan-avatar">🦊 Zorro</span>
+          <span class="plan-avatar">🦅 Cóndor</span>
+          <span class="plan-avatar">🐦 Hornero</span>
+        </div>
+        <ul class="plan-list">
+          <li>Todo lo incluido en Plus</li>
+          <li>Automatización de procesos internos completa</li>
+          <li>Flujos de decisión basados en IA</li>
+          <li>Integración con sistemas y herramientas existentes</li>
+          <li>Reporte semanal automatizado de métricas</li>
+          <li>Seguimiento y nurturing automático de leads</li>
+          <li>Soporte post-implementación 1 mes</li>
+        </ul>
+        <button class="btn-plan" onclick="openModal()">
+          Agendá tu llamada gratuita →
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESO -->
+<section id="proceso">
+  <div class="container reveal">
+    <div class="sec-label">Cómo trabajamos</div>
+    <h2>UN PROCESO <span style="color:var(--cyan)">CLARO</span></h2>
+    <p class="sec-sub">Sin sorpresas, sin tecnicismos. Sabés exactamente qué pasa en cada paso.</p>
+    <div class="pasos">
+      <div class="paso">
+        <div class="paso-n">1</div>
+        <div class="paso-c">
+          <div class="paso-t">Llamada inicial gratuita</div>
+          <div class="paso-d">30 minutos donde nos contás cómo funciona tu negocio hoy. Identificamos los cuellos de botella y vemos si hay fit entre lo que necesitás y lo que hacemos.</div>
+          <div class="paso-time">30 minutos · Online · Sin costo · Sin compromiso</div>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-n">2</div>
+        <div class="paso-c">
+          <div class="paso-t">Propuesta y mapa de flujos</div>
+          <div class="paso-d">Si decidís avanzar, te entregamos un mapa visual de los flujos a implementar, qué resultados esperar y los tiempos. Todo claro antes de arrancar.</div>
+          <div class="paso-time">48-72hs después de la llamada inicial</div>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-n">3</div>
+        <div class="paso-c">
+          <div class="paso-t">Implementación en 10 días</div>
+          <div class="paso-d">Construimos, probamos y ponemos en producción los flujos. Te mostramos cómo funciona todo para que puedas entenderlo y manejarlo.</div>
+          <div class="paso-time">10 días hábiles promedio</div>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-n">4</div>
+        <div class="paso-c">
+          <div class="paso-t">Soporte incluido</div>
+          <div class="paso-d">Acompañamiento post-entrega para ajustar lo que haga falta. El sistema tiene que funcionar exactamente como lo necesitás.</div>
+          <div class="paso-time">Plus: 2 semanas · Premium: 1 mes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="container">
+    <div class="cta-box reveal">
+      <div class="cta-glow"></div>
+      <div class="sec-label" style="justify-content:center;">El primer paso</div>
+      <h2>30 MINUTOS QUE<br><span style="color:var(--cyan)">PUEDEN CAMBIAR TODO</span></h2>
+      <p>Una llamada gratuita. Nos contás cómo está tu negocio hoy y vemos juntos qué se puede automatizar. <strong>Sin compromiso, sin presión.</strong> Si no hay fit, te lo decimos.</p>
+      <button class="btn-primary" style="margin:0 auto;" onclick="openModal()">
+        Agendá tu llamada gratuita
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <div class="cta-feats">
+        <span class="cta-feat">100% gratuita</span>
+        <span class="cta-feat">30 minutos</span>
+        <span class="cta-feat">Sin compromiso</span>
+        <span class="cta-feat">Resultado concreto</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo-text" style="font-size:16px;"><span class="logo-node" style="width:8px;height:8px;"></span>NEURO<span>LINK</span> BA</div>
+  <p>EL ACTIVO MÁS IMPORTANTE ES TIEMPO</p>
+  <div class="footer-social">
+    <a href="https://instagram.com/neurolinkba" target="_blank">@neurolinkba</a>
+    <a href="https://wa.me/5491154644394" target="_blank">WhatsApp</a>
+    <p>© 2026 · Buenos Aires</p>
+  </div>
+</footer>
+
+<!-- WPP FLOAT -->
+<a class="wpp-float" href="https://wa.me/5491154644394" target="_blank" title="Escribinos por WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">×</button>
+    <div id="mform">
+      <h3>LLAMADA <span style="color:var(--cyan)">GRATUITA</span></h3>
+      <p class="modal-sub">Completá tus datos y te contactamos en menos de 24 horas para coordinar la llamada.</p>
+      <div class="fg"><label>Nombre y apellido</label><input type="text" placeholder="Juan García" id="fn"></div>
+      <div class="fg"><label>WhatsApp</label><input type="tel" placeholder="+54 11 1234-5678" id="fw"></div>
+      <div class="fg"><label>Email</label><input type="email" placeholder="juan@empresa.com" id="fe"></div>
+      <div class="fg">
+        <label>Rubro de tu empresa</label>
+        <select id="fr">
+          <option value="">Seleccioná tu rubro</option>
+          <option>Gastronómico / Delivery</option>
+          <option>Comercio / Retail</option>
+          <option>Servicios profesionales</option>
+          <option>Distribución / Logística</option>
+          <option>Construcción / Inmobiliaria</option>
+          <option>Salud / Bienestar</option>
+          <option>Educación</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <button class="btn-sub" onclick="submitForm()">Quiero mi llamada gratuita →</button>
+    </div>
+    <div class="modal-ok" id="mok" style="display:none;">
+      <div class="ck">✅</div>
+      <h3>¡LISTO, <span style="color:var(--cyan)">TE CONTACTAMOS!</span></h3>
+      <p>Recibimos tus datos. Te escribimos en menos de 24 horas para coordinar la llamada.<br><br>Si preferís respuesta inmediata, escribinos directamente por WhatsApp.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.addEventListener('scroll',()=>{
+    document.getElementById('nav').classList.toggle('scrolled',window.scrollY>50);
+  });
+  const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:0.1});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+  function openModal(){document.getElementById('modal').classList.add('active');document.body.style.overflow='hidden';}
+  function closeModal(){document.getElementById('modal').classList.remove('active');document.body.style.overflow='';document.getElementById('mform').style.display='block';document.getElementById('mok').style.display='none';}
+  document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+  function submitForm(){
+    const n=document.getElementById('fn').value;
+    const w=document.getElementById('fw').value;
+    const e=document.getElementById('fe').value;
+    const r=document.getElementById('fr').value;
+    if(!n||!w||!e||!r){alert('Completá todos los campos para continuar.');return;}
+    document.getElementById('mform').style.display='none';
+    document.getElementById('mok').style.display='block';
+    // fetch('TU_WEBHOOK_N8N',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:n,whatsapp:w,email:e,rubro:r})});
+  }
+</script>
+</body>
+</html>
