@@ -1192,15 +1192,20 @@
   function openModal(){document.getElementById('modal').classList.add('active');document.body.style.overflow='hidden';}
   function closeModal(){document.getElementById('modal').classList.remove('active');document.body.style.overflow='';document.getElementById('mform').style.display='block';document.getElementById('mok').style.display='none';}
   document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
-  function submitForm(){
+    async function submitForm(){
     const n=document.getElementById('fn').value;
     const w=document.getElementById('fw').value;
     const e=document.getElementById('fe').value;
     const r=document.getElementById('fr').value;
     if(!n||!w||!e||!r){alert('Completá todos los campos para continuar.');return;}
+    try{
+      await fetch('https://n8n.srv1248914.hstgr.cloud/webhook/neurolink-landing-lead',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({nombre:n,whatsapp:w,email:e,rubro:r})
+      });
+    }catch(err){console.error('Error enviando lead:',err);}
     document.getElementById('mform').style.display='none';
     document.getElementById('mok').style.display='block';
-  }
 </script>
-</body>
-</html>
+</body> 
