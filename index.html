@@ -1192,7 +1192,7 @@
   function openModal(){document.getElementById('modal').classList.add('active');document.body.style.overflow='hidden';}
   function closeModal(){document.getElementById('modal').classList.remove('active');document.body.style.overflow='';document.getElementById('mform').style.display='block';document.getElementById('mok').style.display='none';}
   document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
-    async function submitForm(){
+  async function submitForm(){
     const n=document.getElementById('fn').value;
     const w=document.getElementById('fw').value;
     const e=document.getElementById('fe').value;
@@ -1207,5 +1207,7 @@
     }catch(err){console.error('Error enviando lead:',err);}
     document.getElementById('mform').style.display='none';
     document.getElementById('mok').style.display='block';
+  }
 </script>
-</body> 
+</body>
+</html>
